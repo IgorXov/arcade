@@ -29,7 +29,7 @@ class BattleView(arcade.View):
         self.spawn_interval = 1.0
         self.hp = 20
 
-        self.soul_speed = 25  # пикселей в секунду
+        self.soul_speed = 25
 
         arcade.set_background_color(arcade.color.BLACK)
 
