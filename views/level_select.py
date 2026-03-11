@@ -1,4 +1,3 @@
-# views/level_select.py
 import arcade
 from config import SCREEN_WIDTH, SCREEN_HEIGHT
 

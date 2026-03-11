@@ -50,7 +50,7 @@ class BaseLevel(arcade.View):
         self.player_speed = player_speed
         self.attack_speed = attack_speed
 
-        # Arena box
+        # ������� �����
         self.box_left = SCREEN_WIDTH // 2 - 200
         self.box_right = SCREEN_WIDTH // 2 + 200
         self.box_bottom = 80
@@ -58,7 +58,7 @@ class BaseLevel(arcade.View):
         self.box_width = self.box_right - self.box_left
         self.box_height = self.box_top - self.box_bottom
 
-        # Player
+        # ����� ����
         self.soul = arcade.Sprite(asset_path("player", "soul.png"), scale=1)
         self.soul.center_x = SCREEN_WIDTH // 2
         self.soul.center_y = 150
@@ -66,11 +66,10 @@ class BaseLevel(arcade.View):
         self.soul_list = arcade.SpriteList()
         self.soul_list.append(self.soul)
 
-        # Attacks and particles
         self.attacks = arcade.SpriteList()
         self.particles = arcade.SpriteList()
 
-        # HP and states
+        # ��������� ������
         self.max_hp = 5
         self.hp = 5
         self.game_over = False
@@ -79,18 +78,16 @@ class BaseLevel(arcade.View):
         self.hit_flash_timer = 0.0
         self.invul_time = 0.0
 
-        # Timer
         self.level_timer = 0.0
 
-        # Screen shake
+        # ����� ������
         self.shake_timer = 0.0
         self.shake_strength = 0
 
-        # Pause
+        # ����� ����
         self.paused = False
         self.pause_selected = 0
 
-        # Text
         self.hp_text = arcade.Text(
             f"HP: {self.hp}",
             30,
@@ -131,7 +128,6 @@ class BaseLevel(arcade.View):
             width=400
         )
 
-        # Pause menu text
         self.pause_title_text = arcade.Text(
             "PAUSED",
             SCREEN_WIDTH // 2,
@@ -143,7 +139,7 @@ class BaseLevel(arcade.View):
         )
         self.pause_menu_items = ["Restart Level", "Main Menu"]
 
-        # Background stars (deterministic)
+        # ������� ���
         self.star_rng = random.Random(seed + 1000)
         self.stars = []
         for _ in range(70):
@@ -155,20 +151,18 @@ class BaseLevel(arcade.View):
                 "tw": self.star_rng.uniform(0.4, 1.2),
             })
 
-        # Deterministic schedule
+        # ���������� ����
         self.rng = random.Random(seed)
         self.events = []
         self.event_index = 0
         self.build_schedule()
 
-    # ---------------- SCHEDULE ----------------
     def build_schedule(self):
         raise NotImplementedError
 
     def spawn_event(self, event):
         raise NotImplementedError
 
-    # ---------------- DRAW ----------------
     def on_draw(self):
         self.clear()
         self.draw_background()
@@ -200,7 +194,7 @@ class BaseLevel(arcade.View):
         self.attacks.draw()
         self.particles.draw()
 
-        # Blink soul during invulnerability
+        # ������� ����
         if self.invul_time <= 0 or int(self.invul_time * 10) % 2 == 0:
             self.soul_list.draw()
 
@@ -270,7 +264,6 @@ class BaseLevel(arcade.View):
                 (255, 255, 255, star["a"])
             )
 
-    # ---------------- UPDATE ----------------
     def on_update(self, delta_time):
         if self.paused or self.game_over:
             return
@@ -297,7 +290,7 @@ class BaseLevel(arcade.View):
         self.attacks.update()
         self.particles.update()
 
-        # Clamp player to arena
+        # ����� �����
         half_w = self.soul.width / 2
         half_h = self.soul.height / 2
 
@@ -311,12 +304,11 @@ class BaseLevel(arcade.View):
             min(self.soul.center_y, self.box_top - half_h)
         )
 
-        # Spawn scheduled attacks (deterministic)
+        # ����� �������
         while self.event_index < len(self.events) and self.level_timer >= self.events[self.event_index][0]:
             self.spawn_event(self.events[self.event_index])
             self.event_index += 1
 
-        # Remove attacks that are fully out of bounds
         for attack in list(self.attacks):
             if (
                 attack.top < self.box_bottom - DESPAWN_MARGIN or
@@ -326,13 +318,12 @@ class BaseLevel(arcade.View):
             ):
                 attack.remove_from_sprite_lists()
 
-        # Particles fade
         for p in list(self.particles):
             p.alpha -= 12
             if p.alpha <= 0:
                 p.remove_from_sprite_lists()
 
-        # Collisions
+        # �������� �����
         if self.invul_time <= 0:
             hit_list = arcade.check_for_collision_with_list(self.soul, self.attacks)
             damage_taken = False
@@ -356,13 +347,11 @@ class BaseLevel(arcade.View):
                 record_loss(self.level_key, self.level_timer)
                 self.result_recorded = True
 
-        # Twinkle stars
         for star in self.stars:
             star["a"] += star["tw"] * delta_time * 60
             if star["a"] > 160 or star["a"] < 50:
                 star["tw"] *= -1
 
-    # ---------------- DAMAGE RULES ----------------
     def is_player_moving(self):
         return abs(self.soul.change_x) > 0 or abs(self.soul.change_y) > 0
 
@@ -378,7 +367,7 @@ class BaseLevel(arcade.View):
         rule = BONE_RULES.get(bone_type, "always")
         sprite.damage_rule = rule
 
-    # ---------------- HELPERS ----------------
+
     def spawn_block(self, x, y=None, size=15, dx=0, dy=None, color=arcade.color.WHITE):
         block = arcade.SpriteSolidColor(size, size, color)
         block.center_x = x
@@ -517,7 +506,7 @@ class BaseLevel(arcade.View):
             p.change_y = random.uniform(-3, 3)
             self.particles.append(p)
 
-    # ---------------- INPUT ----------------
+    # ���� ������
     def on_key_press(self, key, modifiers):
         if self.paused:
             if key == arcade.key.UP:

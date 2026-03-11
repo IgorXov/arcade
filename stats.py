@@ -57,6 +57,7 @@ def _mode_keys(mode: str):
 
 
 def record_result(mode: str, won: bool, survived_time: float):
+    # общая статистика
     stats["total_runs"] += 1
 
     if survived_time > stats["best_survival"]:

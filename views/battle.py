@@ -26,7 +26,6 @@ class BattleView(arcade.View):
 
         arcade.set_background_color(arcade.color.BLACK)
 
-        # Battle box
         self.box_width = 400
         self.box_height = 300
         self.box_center_x = SCREEN_WIDTH // 2
@@ -37,7 +36,6 @@ class BattleView(arcade.View):
         self.box_right = self.box_left + self.box_width
         self.box_top = self.box_bottom + self.box_height
 
-        # Soul (32x32)
         self.soul = arcade.Sprite(asset_path("player", "soul.png"), scale=1.0)
         self.soul.center_x = self.box_center_x
         self.soul.center_y = self.box_center_y
@@ -47,17 +45,14 @@ class BattleView(arcade.View):
 
         self.soul_speed = 6
 
-        # HP
         self.hp = 3
         self.invul_time = 0.0
         self.hit_flash_timer = 0.0
         self.result_recorded = False
 
-        # Sound
         self.hit_sound = arcade.load_sound(asset_path("sounds", "hit.mp3"))
         self.sound_ready = self.hit_sound is not None
 
-        # Attacks
         self.lines = arcade.SpriteList()
         self.projectiles = arcade.SpriteList()
         self.walls = arcade.SpriteList()
@@ -66,7 +61,6 @@ class BattleView(arcade.View):
         self.attack_pattern = ["line", "projectile", "wall"]
         self.attack_index = 0
 
-        # Timers
         self.elapsed_time = 0.0
         self.spawn_timer = 0.0
         self.spawn_interval = 0.25
@@ -79,7 +73,6 @@ class BattleView(arcade.View):
             18
         )
 
-        # Background stars
         self.stars = []
         for _ in range(60):
             self.stars.append({
@@ -90,7 +83,6 @@ class BattleView(arcade.View):
                 "tw": random.uniform(0.4, 1.2),
             })
 
-    # ---------------- DRAW ----------------
     def on_draw(self):
         self.clear()
         self.draw_background()
@@ -117,7 +109,6 @@ class BattleView(arcade.View):
         self.walls.draw()
         self.particles.draw()
 
-        # Blink soul during invulnerability
         if self.invul_time <= 0 or int(self.invul_time * 10) % 2 == 0:
             self.soul_list.draw()
 
@@ -161,7 +152,6 @@ class BattleView(arcade.View):
                 (255, 255, 255, star["a"])
             )
 
-    # ---------------- UPDATE ----------------
     def on_update(self, delta_time):
 
         self.elapsed_time += delta_time
@@ -197,7 +187,6 @@ class BattleView(arcade.View):
         self.walls.update(delta_time)
         self.soul_list.update(delta_time)
 
-        # Keep soul inside the box
         half_w = self.soul.width / 2
         half_h = self.soul.height / 2
 
@@ -211,7 +200,6 @@ class BattleView(arcade.View):
             min(self.box_top - half_h, self.soul.center_y)
         )
 
-        # Particles
         for p in list(self.particles):
             p.center_x += p.change_x * delta_time
             p.center_y += p.change_y * delta_time
@@ -219,7 +207,6 @@ class BattleView(arcade.View):
             if p.alpha <= 0:
                 p.remove_from_sprite_lists()
 
-        # Collisions
         if self.invul_time <= 0:
             if (
                 arcade.check_for_collision_with_list(self.soul, self.lines) or
@@ -233,7 +220,6 @@ class BattleView(arcade.View):
                     arcade.play_sound(self.hit_sound)
                 self.spawn_particles()
 
-        # Cleanup
         for spr_list in [self.lines, self.projectiles, self.walls]:
             for obj in list(spr_list):
                 if (
@@ -243,13 +229,11 @@ class BattleView(arcade.View):
                 ):
                     obj.remove_from_sprite_lists()
 
-        # Twinkle stars
         for star in self.stars:
             star["a"] += star["tw"] * delta_time * 60
             if star["a"] > 160 or star["a"] < 50:
                 star["tw"] *= -1
 
-    # ---------------- SPAWN ATTACK ----------------
     def spawn_attack(self):
 
         attack_type = self.attack_pattern[self.attack_index]
@@ -262,7 +246,6 @@ class BattleView(arcade.View):
         elif attack_type == "wall":
             self.spawn_wall()
 
-    # -------- LINE --------
     def spawn_line(self):
         line = arcade.SpriteSolidColor(200, 8, arcade.color.CYAN)
         line.center_x = self.box_left - 100
@@ -270,7 +253,6 @@ class BattleView(arcade.View):
         line.change_x = 20
         self.lines.append(line)
 
-    # -------- PROJECTILE --------
     def spawn_projectile(self):
         proj = arcade.SpriteSolidColor(14, 14, arcade.color.YELLOW)
         proj.center_x = random.uniform(self.box_left, self.box_right)
@@ -278,7 +260,6 @@ class BattleView(arcade.View):
         proj.change_y = -25
         self.projectiles.append(proj)
 
-    # -------- WALL WITH GAP --------
     def spawn_wall(self):
 
         gap_size = 50
@@ -311,7 +292,6 @@ class BattleView(arcade.View):
         self.walls.append(top_wall)
         self.walls.append(bottom_wall)
 
-    # -------- PARTICLES --------
     def spawn_particles(self):
         for _ in range(10):
             p = arcade.SpriteSolidColor(4, 4, arcade.color.WHITE)
@@ -322,7 +302,6 @@ class BattleView(arcade.View):
             p.alpha = 255
             self.particles.append(p)
 
-    # ---------------- INPUT ----------------
     def on_key_press(self, key, modifiers):
         if key == arcade.key.W:
             self.soul.change_y = self.soul_speed

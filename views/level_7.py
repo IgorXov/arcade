@@ -8,10 +8,10 @@ class Level7(BaseLevel):
         super().__init__(level_key="level7", duration=45.0, player_speed=10.0, attack_speed=9.0, seed=61)
 
     def build_schedule(self):
+
         phase1_end = 15.0
         phase2_end = 30.0
 
-        # Phase 1: bone rain + sweeps
         t = 0.6
         while t < phase1_end:
             x = self.rng.randint(self.box_left, self.box_right)
@@ -26,7 +26,6 @@ class Level7(BaseLevel):
             from_left = not from_left
             t += 2.6
 
-        # Phase 2: blue and orange bones from sides
         t = phase1_end + 0.6
         from_left = True
         while t < phase2_end:
@@ -43,7 +42,6 @@ class Level7(BaseLevel):
             from_left = not from_left
             t += 0.6
 
-        # Phase 3: mixed walls + diagonals
         t = phase2_end + 0.6
         while t < self.duration:
             gap_y = self.rng.randint(self.box_bottom + 60, self.box_top - 60)

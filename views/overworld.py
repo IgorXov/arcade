@@ -31,7 +31,6 @@ class OverworldView(arcade.View):
 
         self.speed = 250
 
-        # Background stars
         self.stars = []
         for _ in range(80):
             self.stars.append({
