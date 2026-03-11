@@ -1,10 +1,11 @@
 import arcade
+from config import asset_path
 
 
 class Projectile(arcade.Sprite):
 
     def __init__(self, x, y):
-        super().__init__("assets/projectile.png", scale=1)
+        super().__init__(asset_path("projectile.png"), scale=1)
         self.center_x = x
         self.center_y = y
         self.speed = 200

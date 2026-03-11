@@ -1,19 +1,20 @@
 import arcade
-from config import PLAYER_SPEED
+from config import PLAYER_SPEED, asset_path
 
 
 class Player(arcade.Sprite):
     def __init__(self):
-        super().__init__("assets/player/PC _ Computer - Undertale - Frisk - Walk Down.gif", scale=2)
+        sprite_path = asset_path("player", "PC _ Computer - Undertale - Frisk - Walk Down.gif")
+        super().__init__(sprite_path, scale=2)
 
         self.speed = PLAYER_SPEED
 
         self.walk_textures = [
-            arcade.load_texture("assets/player/PC _ Computer - Undertale - Frisk - Walk Down.gif"),
-            arcade.load_texture("assets/player/PC _ Computer - Undertale - Frisk - Walk Down.gif"),
+            arcade.load_texture(sprite_path),
+            arcade.load_texture(sprite_path),
         ]
 
-        self.idle_texture = arcade.load_texture("assets/player/PC _ Computer - Undertale - Frisk - Walk Down.gif")
+        self.idle_texture = arcade.load_texture(sprite_path)
 
         self.animation_timer = 0
         self.current_texture_index = 0
@@ -27,8 +28,8 @@ class Player(arcade.Sprite):
             if self.animation_timer > 0.15:
                 self.animation_timer = 0
                 self.current_texture_index = (
-                                                     self.current_texture_index + 1
-                                             ) % len(self.walk_textures)
+                    self.current_texture_index + 1
+                ) % len(self.walk_textures)
                 self.texture = self.walk_textures[self.current_texture_index]
         else:
             self.texture = self.idle_texture
