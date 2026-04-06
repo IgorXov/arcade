@@ -1,4 +1,5 @@
 import arcade
+import math
 import random
 from config import (
     SCREEN_WIDTH,
@@ -50,7 +51,7 @@ class BaseLevel(arcade.View):
         self.player_speed = player_speed
         self.attack_speed = attack_speed
 
-        # ������� �����
+        # arena bounds
         self.box_left = SCREEN_WIDTH // 2 - 200
         self.box_right = SCREEN_WIDTH // 2 + 200
         self.box_bottom = 80
@@ -58,7 +59,7 @@ class BaseLevel(arcade.View):
         self.box_width = self.box_right - self.box_left
         self.box_height = self.box_top - self.box_bottom
 
-        # ����� ����
+        # soul setup
         self.soul = arcade.Sprite(asset_path("player", "soul.png"), scale=1)
         self.soul.center_x = SCREEN_WIDTH // 2
         self.soul.center_y = 150
@@ -69,7 +70,7 @@ class BaseLevel(arcade.View):
         self.attacks = arcade.SpriteList()
         self.particles = arcade.SpriteList()
 
-        # ��������� ������
+        # state flags
         self.max_hp = 5
         self.hp = 5
         self.game_over = False
@@ -80,11 +81,11 @@ class BaseLevel(arcade.View):
 
         self.level_timer = 0.0
 
-        # ����� ������
+        # screen shake
         self.shake_timer = 0.0
         self.shake_strength = 0
 
-        # ����� ����
+        # pause menu
         self.paused = False
         self.pause_selected = 0
 
@@ -139,7 +140,16 @@ class BaseLevel(arcade.View):
         )
         self.pause_menu_items = ["Restart Level", "Main Menu"]
 
-        # ������� ���
+        # hit sound
+        self.hit_sound = None
+        self.sound_ready = False
+        try:
+            self.hit_sound = arcade.load_sound(asset_path("sounds", "hit.mp3"))
+            self.sound_ready = True
+        except Exception:
+            self.sound_ready = False
+
+        # starfield
         self.star_rng = random.Random(seed + 1000)
         self.stars = []
         for _ in range(70):
@@ -151,7 +161,7 @@ class BaseLevel(arcade.View):
                 "tw": self.star_rng.uniform(0.4, 1.2),
             })
 
-        # ���������� ����
+        # event schedule
         self.rng = random.Random(seed)
         self.events = []
         self.event_index = 0
@@ -194,7 +204,7 @@ class BaseLevel(arcade.View):
         self.attacks.draw()
         self.particles.draw()
 
-        # ������� ����
+        # blink invul
         if self.invul_time <= 0 or int(self.invul_time * 10) % 2 == 0:
             self.soul_list.draw()
 
@@ -290,7 +300,7 @@ class BaseLevel(arcade.View):
         self.attacks.update()
         self.particles.update()
 
-        # ����� �����
+        # arena clamp
         half_w = self.soul.width / 2
         half_h = self.soul.height / 2
 
@@ -304,7 +314,7 @@ class BaseLevel(arcade.View):
             min(self.soul.center_y, self.box_top - half_h)
         )
 
-        # ����� �������
+        # event spawn
         while self.event_index < len(self.events) and self.level_timer >= self.events[self.event_index][0]:
             self.spawn_event(self.events[self.event_index])
             self.event_index += 1
@@ -323,7 +333,7 @@ class BaseLevel(arcade.View):
             if p.alpha <= 0:
                 p.remove_from_sprite_lists()
 
-        # �������� �����
+        # damage check
         if self.invul_time <= 0:
             hit_list = arcade.check_for_collision_with_list(self.soul, self.attacks)
             damage_taken = False
@@ -339,6 +349,8 @@ class BaseLevel(arcade.View):
                 self.shake_strength = 8
                 self.hit_flash_timer = 0.12
                 self.invul_time = INVUL_DURATION
+                if self.sound_ready:
+                    arcade.play_sound(self.hit_sound)
 
         if self.hp <= 0:
             self.game_over = True
@@ -352,6 +364,7 @@ class BaseLevel(arcade.View):
             if star["a"] > 160 or star["a"] < 50:
                 star["tw"] *= -1
 
+    # bone rules
     def is_player_moving(self):
         return abs(self.soul.change_x) > 0 or abs(self.soul.change_y) > 0
 
@@ -367,7 +380,7 @@ class BaseLevel(arcade.View):
         rule = BONE_RULES.get(bone_type, "always")
         sprite.damage_rule = rule
 
-
+    # spawn helpers
     def spawn_block(self, x, y=None, size=15, dx=0, dy=None, color=arcade.color.WHITE):
         block = arcade.SpriteSolidColor(size, size, color)
         block.center_x = x
@@ -417,6 +430,32 @@ class BaseLevel(arcade.View):
         line.center_x = x
         self.apply_bone_rule(line, bone_type)
         self.attacks.append(line)
+
+    def spawn_radial(self, center_x, center_y, count=12, speed=5.0, size=10, bone_type="white"):
+        color = BONE_COLORS.get(bone_type, arcade.color.WHITE)
+        for i in range(count):
+            angle = (math.pi * 2 * i) / count
+            dx = math.cos(angle) * speed
+            dy = math.sin(angle) * speed
+            proj = arcade.SpriteSolidColor(size, size, color)
+            proj.center_x = center_x
+            proj.center_y = center_y
+            proj.change_x = dx
+            proj.change_y = dy
+            self.apply_bone_rule(proj, bone_type)
+            self.attacks.append(proj)
+
+    def spawn_spiral_shot(self, center_x, center_y, angle, speed=5.0, size=10, bone_type="white"):
+        color = BONE_COLORS.get(bone_type, arcade.color.WHITE)
+        dx = math.cos(angle) * speed
+        dy = math.sin(angle) * speed
+        proj = arcade.SpriteSolidColor(size, size, color)
+        proj.center_x = center_x
+        proj.center_y = center_y
+        proj.change_x = dx
+        proj.change_y = dy
+        self.apply_bone_rule(proj, bone_type)
+        self.attacks.append(proj)
 
     def spawn_wall_gap(self, gap_y, from_left, gap_half=40, tile=20, speed=4):
         for y in range(self.box_bottom, self.box_top, tile):
@@ -506,7 +545,7 @@ class BaseLevel(arcade.View):
             p.change_y = random.uniform(-3, 3)
             self.particles.append(p)
 
-    # ���� ������
+    # input handling
     def on_key_press(self, key, modifiers):
         if self.paused:
             if key == arcade.key.UP:

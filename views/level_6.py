@@ -11,6 +11,7 @@ class Level6(BaseLevel):
     def build_schedule(self):
         gap_interval = 1.2
         sweep_interval = 3.0
+        ring_interval = 5.0
 
         t = 0.7
         i = 0
@@ -30,6 +31,18 @@ class Level6(BaseLevel):
             from_left = not from_left
             t += sweep_interval
 
+        t = 4.0
+        while t < self.duration:
+            self.events.append((t, "ring", 12, 4.4))
+            t += ring_interval
+
+        t = 18.0
+        angle = 0.0
+        while t < 28.0:
+            self.events.append((t, "spiral", angle))
+            t += 0.28
+            angle += 0.6
+
         self.events.sort(key=lambda e: e[0])
 
     def spawn_event(self, event):
@@ -38,3 +51,11 @@ class Level6(BaseLevel):
             self.spawn_horizontal_gap(event[2], gap_width=90, bar_height=10, speed=7)
         elif kind == "sweep":
             self.spawn_bone_horizontal(event[2], from_left=event[3], length=180, thickness=8, speed=10, bone_type="white")
+        elif kind == "ring":
+            cx = (self.box_left + self.box_right) / 2
+            cy = (self.box_bottom + self.box_top) / 2
+            self.spawn_radial(cx, cy, count=event[2], speed=event[3], size=9, bone_type="white")
+        elif kind == "spiral":
+            cx = (self.box_left + self.box_right) / 2
+            cy = (self.box_bottom + self.box_top) / 2
+            self.spawn_spiral_shot(cx, cy, event[2], speed=5.0, size=9, bone_type="white")

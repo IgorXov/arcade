@@ -10,6 +10,7 @@ class Level4(BaseLevel):
     def build_schedule(self):
         diag_interval = 2.2
         burst_interval = 3.6
+        ring_interval = 4.2
 
         t = 0.8
         while t < self.duration:
@@ -20,6 +21,18 @@ class Level4(BaseLevel):
         while t < self.duration:
             self.events.append((t, "center_burst"))
             t += burst_interval
+
+        t = 2.0
+        while t < self.duration:
+            self.events.append((t, "ring", 10, 4.6))
+            t += ring_interval
+
+        t = 12.0
+        angle = 0.0
+        while t < 22.0:
+            self.events.append((t, "spiral", angle))
+            t += 0.25
+            angle += 0.55
 
         self.events.sort(key=lambda e: e[0])
 
@@ -41,3 +54,11 @@ class Level4(BaseLevel):
             ]
             for dx, dy in directions:
                 self.spawn_diagonal(cx, cy, dx * speed, dy * speed, size=10, color=arcade.color.YELLOW)
+        elif kind == "ring":
+            cx = (self.box_left + self.box_right) / 2
+            cy = (self.box_bottom + self.box_top) / 2
+            self.spawn_radial(cx, cy, count=event[2], speed=event[3], size=10, bone_type="white")
+        elif kind == "spiral":
+            cx = (self.box_left + self.box_right) / 2
+            cy = (self.box_bottom + self.box_top) / 2
+            self.spawn_spiral_shot(cx, cy, event[2], speed=5.2, size=9, bone_type="white")

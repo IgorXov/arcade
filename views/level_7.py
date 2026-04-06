@@ -8,7 +8,6 @@ class Level7(BaseLevel):
         super().__init__(level_key="level7", duration=45.0, player_speed=10.0, attack_speed=9.0, seed=61)
 
     def build_schedule(self):
-
         phase1_end = 15.0
         phase2_end = 30.0
 
@@ -54,6 +53,18 @@ class Level7(BaseLevel):
             self.events.append((t, "diag_pair"))
             t += 1.9
 
+        t = phase2_end + 1.0
+        while t < self.duration:
+            self.events.append((t, "ring", 12, 4.8))
+            t += 4.4
+
+        t = phase2_end + 1.6
+        angle = 0.0
+        while t < self.duration:
+            self.events.append((t, "spiral", angle))
+            t += 0.3
+            angle += 0.55
+
         self.events.sort(key=lambda e: e[0])
 
     def spawn_event(self, event):
@@ -72,3 +83,11 @@ class Level7(BaseLevel):
             speed = 5.5
             self.spawn_diagonal(self.box_left - 10, self.box_top + 10, speed, -speed, size=12, color=arcade.color.ORANGE)
             self.spawn_diagonal(self.box_right + 10, self.box_bottom - 10, -speed, speed, size=12, color=arcade.color.ORANGE)
+        elif kind == "ring":
+            cx = (self.box_left + self.box_right) / 2
+            cy = (self.box_bottom + self.box_top) / 2
+            self.spawn_radial(cx, cy, count=event[2], speed=event[3], size=9, bone_type="white")
+        elif kind == "spiral":
+            cx = (self.box_left + self.box_right) / 2
+            cy = (self.box_bottom + self.box_top) / 2
+            self.spawn_spiral_shot(cx, cy, event[2], speed=5.0, size=9, bone_type="white")

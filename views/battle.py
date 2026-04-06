@@ -50,8 +50,13 @@ class BattleView(arcade.View):
         self.hit_flash_timer = 0.0
         self.result_recorded = False
 
-        self.hit_sound = arcade.load_sound(asset_path("sounds", "hit.mp3"))
-        self.sound_ready = self.hit_sound is not None
+        self.hit_sound = None
+        self.sound_ready = False
+        try:
+            self.hit_sound = arcade.load_sound(asset_path("sounds", "hit.mp3"))
+            self.sound_ready = True
+        except Exception:
+            self.sound_ready = False
 
         self.lines = arcade.SpriteList()
         self.projectiles = arcade.SpriteList()
